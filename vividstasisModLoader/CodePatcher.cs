@@ -12,9 +12,9 @@ namespace vividstasisModLoader;
 
 public class CodePatcher(UndertaleData data, string modDir)
 {
-    private string _patchFilePath = $"{modDir}/codepatches.json";
-    private string _codeReplacePath = $"{modDir}/codes/";
-    private string _codePatchesPath = $"{modDir}/codepatches/";
+    private string _patchFilePath = Path.Combine(modDir, "codepatches.json");
+    private string _codeReplacePath = Path.Combine(modDir, "codes");
+    private string _codePatchesPath = Path.Combine(modDir, "codepatches");
     private List<CodePatch>? _patches = [];
     private GlobalDecompileContext _globalDecompileContext;
     private Dictionary<string, string> _cachedCodes = [];

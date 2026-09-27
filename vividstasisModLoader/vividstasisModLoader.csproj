@@ -11,7 +11,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <DebugType>embedded</DebugType>
@@ -25,8 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UndertaleModTool\Underanalyzer\Underanalyzer\Underanalyzer.csproj" />
-    <ProjectReference Include="..\UndertaleModTool\UndertaleModLib\UndertaleModLib.csproj" />
+    <ProjectReference Include="..\UndertaleModTool\Underanalyzer\Underanalyzer\Underanalyzer.csproj">
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+    </ProjectReference>
+    <ProjectReference Include="..\UndertaleModTool\UndertaleModLib\UndertaleModLib.csproj">
+      <AdditionalProperties>TargetFramework=net10.0</AdditionalProperties>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -49,7 +52,8 @@
   </ItemGroup>
 
   <Target Name="ApplyUndertaleModToolPatches" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\scripts\Apply-UndertaleModToolPatches.ps1&quot;" />
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\scripts\Apply-UndertaleModToolPatches.ps1&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="sh &quot;$(MSBuildProjectDirectory)/../scripts/apply-undertale-mod-tool-patches.sh&quot;" />
   </Target>
 
 </Project>

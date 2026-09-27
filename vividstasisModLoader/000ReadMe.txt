@@ -2,6 +2,8 @@
 
 对于 /excel 中的每个 *.xlsx：A 列必须是原文，B 列必须是修改后的文本。
 
+Linux 与 Proton：`linux-x64` 版本用于在 Proton 中运行 Windows 版 Steam 游戏。程序会从标准 Steam 和 Flatpak Steam 的库目录读取 `libraryfolders.vdf` 及 `appmanifest_2093940.acf`，自动查找包含有效 `data.win` 的游戏目录。自动检测失败时，请编辑 loader 可执行文件旁的 `path.json` 并填写 `game_path`；将 `force_custom_path` 设置为 `true` 可跳过自动检测和 IPC。Linux 会生成可执行的 `restore.sh`，Windows 会生成 `restore.cmd`，两个脚本都会直接调用当前 loader 并传入 `restore` 参数。BVO IPC 目前仅支持 Windows。
+
 对于 /raw 中的文件：会用同名文件替换游戏目录中的对应文件。
 
 关于 codepatches.json：
@@ -25,6 +27,8 @@
 【English】
 
 For each *.xlsx in /excel: column A must be the original text, and column B must be the modified text.
+
+Linux/Proton installs are discovered from Steam library metadata. If discovery fails, edit path.json beside the loader and set game_path; force_custom_path=true bypasses discovery. Linux creates restore.sh and Windows creates restore.cmd. BVO IPC is currently Windows-only.
 
 For files in /raw: every file with the same name in the game folder will be replaced.
 

@@ -18,8 +18,18 @@ concurrency:
 
 jobs:
   publish:
-    name: Publish VML
-    runs-on: windows-latest
+    name: Publish VML (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            executable: vividstasisModLoader.exe
+          - os: ubuntu-latest
+            rid: linux-x64
+            executable: vividstasisModLoader
     timeout-minutes: 30
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -37,24 +47,24 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Publish VML
-        shell: pwsh
         run: >-
-          dotnet publish vividstasisModLoader\vividstasisModLoader.csproj
+          dotnet publish vividstasisModLoader/vividstasisModLoader.csproj
           -c Release
-          -r win-x64
+          -r ${{ matrix.rid }}
           --self-contained true
           -p:PublishSingleFile=true
-          -o artifacts\vml
+          -o artifacts/vml-${{ matrix.rid }}
           -f net10.0
 
       - name: Verify published artifact
         shell: pwsh
+        if: matrix.os == 'windows-latest'
         run: |
           $ErrorActionPreference = "Stop"
           [xml]$project = Get-Content -Raw vividstasisModLoader\vividstasisModLoader.csproj
           $expectedVersion = $project.Project.PropertyGroup.Version
           $expectedFileVersion = $project.Project.PropertyGroup.FileVersion
-          $executable = Get-Item artifacts\vml\vividstasisModLoader.exe
+          $executable = Get-Item artifacts/vml-${{ matrix.rid }}/${{ matrix.executable }}
 
           if ($executable.VersionInfo.FileVersion -ne $expectedFileVersion) {
             throw "Expected file version $expectedFileVersion, got $($executable.VersionInfo.FileVersion)."
@@ -65,13 +75,19 @@ jobs:
             throw "AppInfo.VERSION does not match project version $expectedVersion."
           }
 
-          if (-not (Test-Path artifacts\vml\path.json -PathType Leaf)) {
+          if (-not (Test-Path artifacts/vml-${{ matrix.rid }}/path.json -PathType Leaf)) {
             throw "Published artifact is missing path.json."
           }
+
+      - name: Verify Linux artifact
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          test -x artifacts/vml-${{ matrix.rid }}/${{ matrix.executable }}
+          test -f artifacts/vml-${{ matrix.rid }}/path.json
 
       - name: Upload VML artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vml-win-x64
-          path: artifacts\vml
+          name: vml-${{ matrix.rid }}
+          path: artifacts/vml-${{ matrix.rid }}
           if-no-files-found: error

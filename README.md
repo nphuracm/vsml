@@ -41,7 +41,19 @@ ExternalFile 指向的文件不存在、目标条目反编译失败、目标条�
 注意：程序会先修补文本，再修补代码。
 所以如果你已经用 *.xlsx 改过文本，Find 里要填改之后的文本。
 
+### Linux 与 Proton
+
+`linux-x64` 版本用于在 Proton 中运行 Windows 版 Steam 游戏。程序会检查标准 Steam 和 Flatpak Steam 的库目录，读取 `libraryfolders.vdf` 和 `appmanifest_2093940.acf`，并使用第一个包含有效 `data.win` 的游戏目录。如果自动检测不到游戏，请编辑 loader 可执行文件旁的 `path.json`，填写 `game_path`；将 `force_custom_path` 设置为 `true` 可以跳过自动检测和 IPC，始终使用该路径。
+
+修补完成后，Linux 会在当前工作目录生成可执行的 `restore.sh`，Windows 会生成 `restore.cmd`。两个脚本都会直接调用当前 loader 可执行文件并传入 `restore` 参数。BVO IPC 目前仍仅支持 Windows。
+
 ## Use Guide
+
+### Linux and Proton
+
+The `linux-x64` publish runs the Windows Steam build under Proton. The loader checks the standard Steam and Flatpak Steam library locations, reads `libraryfolders.vdf` and `appmanifest_2093940.acf`, and uses the first library containing a valid `data.win`. If discovery does not find the game, set `game_path` in `path.json`; set `force_custom_path` to `true` to skip discovery and IPC entirely. The file is beside the loader executable.
+
+After patching, Linux creates an executable `restore.sh` in the working directory. Windows creates `restore.cmd`; both helpers call the current loader executable directly and pass `restore`. BVO IPC remains Windows-only.
 
 For each *.xlsx in /excel: column A must be the original text, and column B must be the modified text.
 

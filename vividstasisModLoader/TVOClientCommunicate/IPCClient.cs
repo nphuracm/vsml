@@ -17,13 +17,13 @@ namespace vividstasisModLoader.TVOClientCommunicate
         public static string GamePath { get; private set; }
         private static StreamWriter? _ipcWriter;
 
-        public static void Init(string[] args)
+        public static void Init(string? pipeName)
         {
-            if (args.Length > 0 && args[0] != "--dry-run")
+            if (!string.IsNullOrWhiteSpace(pipeName))
             {
                 var pipeClient = new NamedPipeClientStream(
                     ".",
-                    args[0],
+                    pipeName,
                     PipeDirection.InOut);
 
                 pipeClient.Connect();

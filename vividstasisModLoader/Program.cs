@@ -66,16 +66,45 @@ bool IsDryRunMode(string[] inputArgs)
     return HasArg(inputArgs, "--dry-run") || HasArg(inputArgs, "dry-run");
 }
 
+// BVO starts the loader with its pipe name as the first argument. Local commands
+// use the same entry point, so classify those before handing the value to IPC.
+string? GetIpcPipeName(string[] inputArgs)
+{
+    if (inputArgs.Length == 0)
+    {
+        return null;
+    }
+
+    var firstArg = inputArgs[0];
+    if (string.Equals(firstArg, "restore", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(firstArg, "dry-run", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(firstArg, "--dry-run", StringComparison.OrdinalIgnoreCase))
+    {
+        return null;
+    }
+
+    return firstArg;
+}
+
 // 生成一键还原脚本，便于用户快速回退。
 void CreateRestoreScript(bool dryRun)
 {
     if (dryRun)
     {
-        PrintInfo("[dry-run] 将生成 restore.cmd 脚本。", "[dry-run] Would create restore.cmd script.");
+        PrintInfo("[dry-run] 将生成平台对应的还原脚本。", "[dry-run] Would create a platform restore script.");
         return;
     }
 
-    File.WriteAllText("./restore.cmd", "vividstasisModLoader restore");
+    var loaderPath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, OperatingSystem.IsWindows() ? "vividstasisModLoader.exe" : "vividstasisModLoader");
+    if (OperatingSystem.IsWindows())
+    {
+        File.WriteAllText("restore.cmd", $"@echo off\r\n\"{loaderPath}\" restore\r\n");
+    }
+    else
+    {
+        File.WriteAllText("restore.sh", $"#!/bin/sh\nexec '{loaderPath.Replace("'", "'\\''")}' restore \"$@\"\n");
+        File.SetUnixFileMode("restore.sh", UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+    }
 }
 
 // 读取配置文件，若不存在或解析失败则返回默认配置。
@@ -155,15 +184,24 @@ GamePathConfig LoadOrCreateGamePathConfig()
 // 自动检测游戏目录，检测失败时再使用 path.json 的 game_path。
 string ResolveGamePath(GamePathConfig pathConfig)
 {
-    var detectedGamePath = Registry.GetValue(
-        @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 2093940",
-        "InstallLocation",
-        null
-    ) as string ?? string.Empty;
-
-    if (IsUsableGamePath(detectedGamePath))
+    var candidates = new List<string>();
+    if (OperatingSystem.IsWindows())
     {
-        return detectedGamePath;
+        candidates.Add(Registry.GetValue(
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 2093940",
+            "InstallLocation", null) as string ?? string.Empty);
+    }
+    else
+    {
+        candidates.AddRange(DiscoverLinuxSteamGamePaths());
+    }
+
+    foreach (var candidate in candidates)
+    {
+        if (IsUsableGamePath(candidate))
+        {
+            return candidate;
+        }
     }
 
     if (IsUsableGamePath(pathConfig.GamePath))
@@ -180,6 +218,48 @@ string ResolveGamePath(GamePathConfig pathConfig)
         "Neither automatic detection nor path.json provided a valid game directory; please enter one manually."
     );
     return AskGamePath();
+}
+
+IEnumerable<string> DiscoverLinuxSteamGamePaths()
+{
+    var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    var roots = new[]
+    {
+        Path.Combine(home, ".steam", "steam"),
+        Path.Combine(home, ".local", "share", "Steam"),
+        Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", "data", "Steam")
+    };
+
+    foreach (var root in roots.Distinct(StringComparer.Ordinal))
+    {
+        yield return root;
+        var libraryFile = Path.Combine(root, "steamapps", "libraryfolders.vdf");
+        foreach (var library in ParseSteamLibraryPaths(libraryFile))
+        {
+            var manifest = Path.Combine(library, "steamapps", "appmanifest_2093940.acf");
+            var installDir = ParseVdfValue(manifest, "installdir");
+            if (!string.IsNullOrWhiteSpace(installDir))
+            {
+                yield return Path.Combine(library, "steamapps", "common", installDir);
+            }
+        }
+    }
+}
+
+IEnumerable<string> ParseSteamLibraryPaths(string file)
+{
+    if (!File.Exists(file)) yield break;
+    var text = File.ReadAllText(file);
+    var paths = Regex.Matches(text, "\\\"path\\\"\\s+\\\"(?<path>[^\\\"]+)\\\"", RegexOptions.IgnoreCase)
+        .Select(m => m.Groups["path"].Value.Replace("\\\\", Path.DirectorySeparatorChar.ToString()));
+    foreach (var path in paths) yield return path;
+}
+
+string? ParseVdfValue(string file, string key)
+{
+    if (!File.Exists(file)) return null;
+    var match = Regex.Match(File.ReadAllText(file), $"\\\"{Regex.Escape(key)}\\\"\\s+\\\"(?<value>[^\\\"]+)\\\"", RegexOptions.IgnoreCase);
+    return match.Success ? match.Groups["value"].Value : null;
 }
 
 // force_custom_path 启用时只接受 path.json 的 game_path，不再读取 IPC 或注册表路径。
@@ -766,7 +846,7 @@ void PauseAfterPatch(bool dryRun)
 void Run(string[] inputArgs)
 {
     // TVOC联动用
-    PipeClient.Init(inputArgs);
+    PipeClient.Init(GetIpcPipeName(inputArgs));
 
     // 防止TVOC联动启动时运行路径被认为是TVOC目录
     if (PipeClient.IPCMode)
@@ -827,7 +907,7 @@ void Run(string[] inputArgs)
     PrintInfo($"游戏路径：{gamePath}", $"Game path: {gamePath}");
 
     var dataFilePath = Path.Combine(gamePath, "data.win");
-    var backupFolderPath = Path.Combine(gamePath, "backup\\");
+    var backupFolderPath = Path.Combine(gamePath, "backup");
 
     if (TryRestoreFromBackup(restoreMode, dryRun, backupFolderPath, gamePath))
     {
@@ -888,7 +968,7 @@ class ModLoaderConfig
 class GamePathConfig
 {
     [JsonPropertyName("game_path")]
-    public string GamePath { get; set; } = @"C:\example\path\";
+    public string GamePath { get; set; } = string.Empty;
 
     [JsonPropertyName("force_use_custom_path")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -901,4 +981,3 @@ class GamePathConfig
     [JsonIgnore]
     public bool ShouldForceCustomPath => ForceCustomPath ?? ForceUseCustomPath;
 }
-

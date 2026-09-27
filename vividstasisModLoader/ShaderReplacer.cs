@@ -6,7 +6,7 @@ namespace vividstasisModLoader;
 
 public class ShaderReplacer(UndertaleData data, string modDir)
 {
-    readonly string _importFolder = $"{modDir}/shaders";
+    readonly string _importFolder = Path.Combine(modDir, "shaders");
 
     public bool Exist()
     {
@@ -44,10 +44,10 @@ public class ShaderReplacer(UndertaleData data, string modDir)
     }
     void ImportShader(UndertaleShader existing_shader)
     {
-        var localImportDir = _importFolder + "/" + existing_shader.Name.Content + "/";
-        if (File.Exists(localImportDir + "Type.txt"))
+        var localImportDir = Path.Combine(_importFolder, existing_shader.Name.Content);
+        if (File.Exists(Path.Combine(localImportDir, "Type.txt")))
         {
-            var shader_type = File.ReadAllText(localImportDir + "Type.txt");
+            var shader_type = File.ReadAllText(Path.Combine(localImportDir, "Type.txt"));
             if (shader_type.Contains("GLSL_ES"))
                 existing_shader.Type = UndertaleShader.ShaderType.GLSL_ES;
             else if (shader_type.Contains("GLSL"))
@@ -63,65 +63,65 @@ public class ShaderReplacer(UndertaleData data, string modDir)
             else if (shader_type.Contains("Cg_PS3"))
                 existing_shader.Type = UndertaleShader.ShaderType.Cg_PS3;
         }
-        if (File.Exists(localImportDir + "GLSL_ES_Fragment.txt"))
-            existing_shader.GLSL_ES_Fragment.Content = File.ReadAllText(localImportDir + "GLSL_ES_Fragment.txt");
-        if (File.Exists(localImportDir + "GLSL_ES_Vertex.txt"))
-            existing_shader.GLSL_ES_Vertex.Content = File.ReadAllText(localImportDir + "GLSL_ES_Vertex.txt");
-        if (File.Exists(localImportDir + "GLSL_Fragment.txt"))
-            existing_shader.GLSL_Fragment.Content = File.ReadAllText(localImportDir + "GLSL_Fragment.txt");
-        if (File.Exists(localImportDir + "GLSL_Vertex.txt"))
-            existing_shader.GLSL_Vertex.Content = File.ReadAllText(localImportDir + "GLSL_Vertex.txt");
-        if (File.Exists(localImportDir + "HLSL9_Fragment.txt"))
-            existing_shader.HLSL9_Fragment.Content = File.ReadAllText(localImportDir + "HLSL9_Fragment.txt");
-        if (File.Exists(localImportDir + "HLSL9_Vertex.txt"))
-            existing_shader.HLSL9_Vertex.Content = File.ReadAllText(localImportDir + "HLSL9_Vertex.txt");
-        if (File.Exists(localImportDir + "HLSL11_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_ES_Fragment.txt")))
+            existing_shader.GLSL_ES_Fragment.Content = File.ReadAllText(Path.Combine(localImportDir, "GLSL_ES_Fragment.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_ES_Vertex.txt")))
+            existing_shader.GLSL_ES_Vertex.Content = File.ReadAllText(Path.Combine(localImportDir, "GLSL_ES_Vertex.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_Fragment.txt")))
+            existing_shader.GLSL_Fragment.Content = File.ReadAllText(Path.Combine(localImportDir, "GLSL_Fragment.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_Vertex.txt")))
+            existing_shader.GLSL_Vertex.Content = File.ReadAllText(Path.Combine(localImportDir, "GLSL_Vertex.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "HLSL9_Fragment.txt")))
+            existing_shader.HLSL9_Fragment.Content = File.ReadAllText(Path.Combine(localImportDir, "HLSL9_Fragment.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "HLSL9_Vertex.txt")))
+            existing_shader.HLSL9_Vertex.Content = File.ReadAllText(Path.Combine(localImportDir, "HLSL9_Vertex.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "HLSL11_VertexData.bin")))
         {
             existing_shader.HLSL11_VertexData ??= new UndertaleShader.UndertaleRawShaderData();
-            existing_shader.HLSL11_VertexData.Data = File.ReadAllBytes(localImportDir + "HLSL11_VertexData.bin");
+            existing_shader.HLSL11_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "HLSL11_VertexData.bin"));
             existing_shader.HLSL11_VertexData.IsNull = false;
         }
-        if (File.Exists(localImportDir + "HLSL11_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "HLSL11_PixelData.bin")))
         {
             existing_shader.HLSL11_PixelData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.HLSL11_PixelData.IsNull = false;
-            existing_shader.HLSL11_PixelData.Data = File.ReadAllBytes(localImportDir + "HLSL11_PixelData.bin");
+            existing_shader.HLSL11_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "HLSL11_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "PSSL_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "PSSL_VertexData.bin")))
         {
             existing_shader.PSSL_VertexData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.PSSL_VertexData.IsNull = false;
-            existing_shader.PSSL_VertexData.Data = File.ReadAllBytes(localImportDir + "PSSL_VertexData.bin");
+            existing_shader.PSSL_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "PSSL_VertexData.bin"));
         }
-        if (File.Exists(localImportDir + "PSSL_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "PSSL_PixelData.bin")))
         {
             existing_shader.PSSL_PixelData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.PSSL_PixelData.IsNull = false;
-            existing_shader.PSSL_PixelData.Data = File.ReadAllBytes(localImportDir + "PSSL_PixelData.bin");
+            existing_shader.PSSL_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "PSSL_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PSVita_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PSVita_VertexData.bin")))
         {
             existing_shader.Cg_PSVita_VertexData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.Cg_PSVita_VertexData.IsNull = false;
-            existing_shader.Cg_PSVita_VertexData.Data = File.ReadAllBytes(localImportDir + "Cg_PSVita_VertexData.bin");
+            existing_shader.Cg_PSVita_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PSVita_VertexData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PSVita_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PSVita_PixelData.bin")))
         {
             existing_shader.Cg_PSVita_PixelData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.Cg_PSVita_PixelData.IsNull = false;
-            existing_shader.Cg_PSVita_PixelData.Data = File.ReadAllBytes(localImportDir + "Cg_PSVita_PixelData.bin");
+            existing_shader.Cg_PSVita_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PSVita_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PS3_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PS3_VertexData.bin")))
         {
             existing_shader.Cg_PS3_VertexData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.Cg_PS3_VertexData.IsNull = false;
-            existing_shader.Cg_PS3_VertexData.Data = File.ReadAllBytes(localImportDir + "Cg_PS3_VertexData.bin");
+            existing_shader.Cg_PS3_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PS3_VertexData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PS3_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PS3_PixelData.bin")))
         {
             existing_shader.Cg_PS3_PixelData ??= new UndertaleShader.UndertaleRawShaderData();
             existing_shader.Cg_PS3_PixelData.IsNull = false;
-            existing_shader.Cg_PS3_PixelData.Data = File.ReadAllBytes(localImportDir + "Cg_PS3_PixelData.bin");
+            existing_shader.Cg_PS3_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PS3_PixelData.bin"));
         }
     }
 
@@ -129,10 +129,10 @@ public class ShaderReplacer(UndertaleData data, string modDir)
     {
         var new_shader = new UndertaleShader();
         new_shader.Name = data.Strings.MakeString(shader_name);
-        var localImportDir = _importFolder + "/" + shader_name + "/";
-        if (File.Exists(localImportDir + "Type.txt"))
+        var localImportDir = Path.Combine(_importFolder, shader_name);
+        if (File.Exists(Path.Combine(localImportDir, "Type.txt")))
         {
-            var shader_type = File.ReadAllText(localImportDir + "Type.txt");
+            var shader_type = File.ReadAllText(Path.Combine(localImportDir, "Type.txt"));
             if (shader_type.Contains("GLSL_ES"))
                 new_shader.Type = UndertaleShader.ShaderType.GLSL_ES;
             else if (shader_type.Contains("GLSL"))
@@ -152,83 +152,83 @@ public class ShaderReplacer(UndertaleData data, string modDir)
         }
         else
             new_shader.Type = UndertaleShader.ShaderType.GLSL_ES;
-        if (File.Exists(localImportDir + "GLSL_ES_Fragment.txt"))
-            new_shader.GLSL_ES_Fragment = data.Strings.MakeString(File.ReadAllText(localImportDir + "GLSL_ES_Fragment.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_ES_Fragment.txt")))
+            new_shader.GLSL_ES_Fragment = data.Strings.MakeString(File.ReadAllText(Path.Combine(localImportDir, "GLSL_ES_Fragment.txt")));
         else
             new_shader.GLSL_ES_Fragment = data.Strings.MakeString("");
-        if (File.Exists(localImportDir + "GLSL_ES_Vertex.txt"))
-            new_shader.GLSL_ES_Vertex = data.Strings.MakeString(File.ReadAllText(localImportDir + "GLSL_ES_Vertex.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_ES_Vertex.txt")))
+            new_shader.GLSL_ES_Vertex = data.Strings.MakeString(File.ReadAllText(Path.Combine(localImportDir, "GLSL_ES_Vertex.txt")));
         else
             new_shader.GLSL_ES_Vertex = data.Strings.MakeString("");
-        if (File.Exists(localImportDir + "GLSL_Fragment.txt"))
-            new_shader.GLSL_Fragment = data.Strings.MakeString(File.ReadAllText(localImportDir + "GLSL_Fragment.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_Fragment.txt")))
+            new_shader.GLSL_Fragment = data.Strings.MakeString(File.ReadAllText(Path.Combine(localImportDir, "GLSL_Fragment.txt")));
         else
             new_shader.GLSL_Fragment = data.Strings.MakeString("");
-        if (File.Exists(localImportDir + "GLSL_Vertex.txt"))
-            new_shader.GLSL_Vertex = data.Strings.MakeString(File.ReadAllText(localImportDir + "GLSL_Vertex.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "GLSL_Vertex.txt")))
+            new_shader.GLSL_Vertex = data.Strings.MakeString(File.ReadAllText(Path.Combine(localImportDir, "GLSL_Vertex.txt")));
         else
             new_shader.GLSL_Vertex = data.Strings.MakeString("");
-        if (File.Exists(localImportDir + "HLSL9_Fragment.txt"))
-            new_shader.HLSL9_Fragment = data.Strings.MakeString(File.ReadAllText(localImportDir + "HLSL9_Fragment.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "HLSL9_Fragment.txt")))
+            new_shader.HLSL9_Fragment = data.Strings.MakeString(File.ReadAllText(Path.Combine(localImportDir, "HLSL9_Fragment.txt")));
         else
             new_shader.HLSL9_Fragment = data.Strings.MakeString("");
-        if (File.Exists(localImportDir + "HLSL9_Vertex.txt"))
-            new_shader.HLSL9_Vertex = data.Strings.MakeString(File.ReadAllText(localImportDir + "HLSL9_Vertex.txt"));
+        if (File.Exists(Path.Combine(localImportDir, "HLSL9_Vertex.txt")))
+            new_shader.HLSL9_Vertex = data.Strings.MakeString(File.ReadAllText(Path.Combine(localImportDir, "HLSL9_Vertex.txt")));
         else
             new_shader.HLSL9_Vertex = data.Strings.MakeString("");
-        if (File.Exists(localImportDir + "HLSL11_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "HLSL11_VertexData.bin")))
         {
             new_shader.HLSL11_VertexData = new UndertaleShader.UndertaleRawShaderData();
-            new_shader.HLSL11_VertexData.Data = File.ReadAllBytes(localImportDir + "HLSL11_VertexData.bin");
+            new_shader.HLSL11_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "HLSL11_VertexData.bin"));
             new_shader.HLSL11_VertexData.IsNull = false;
         }
-        if (File.Exists(localImportDir + "HLSL11_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "HLSL11_PixelData.bin")))
         {
             new_shader.HLSL11_PixelData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.HLSL11_PixelData.IsNull = false;
-            new_shader.HLSL11_PixelData.Data = File.ReadAllBytes(localImportDir + "HLSL11_PixelData.bin");
+            new_shader.HLSL11_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "HLSL11_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "PSSL_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "PSSL_VertexData.bin")))
         {
             new_shader.PSSL_VertexData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.PSSL_VertexData.IsNull = false;
-            new_shader.PSSL_VertexData.Data = File.ReadAllBytes(localImportDir + "PSSL_VertexData.bin");
+            new_shader.PSSL_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "PSSL_VertexData.bin"));
         }
-        if (File.Exists(localImportDir + "PSSL_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "PSSL_PixelData.bin")))
         {
             new_shader.PSSL_PixelData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.PSSL_PixelData.IsNull = false;
-            new_shader.PSSL_PixelData.Data = File.ReadAllBytes(localImportDir + "PSSL_PixelData.bin");
+            new_shader.PSSL_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "PSSL_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PSVita_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PSVita_VertexData.bin")))
         {
             new_shader.Cg_PSVita_VertexData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.Cg_PSVita_VertexData.IsNull = false;
-            new_shader.Cg_PSVita_VertexData.Data = File.ReadAllBytes(localImportDir + "Cg_PSVita_VertexData.bin");
+            new_shader.Cg_PSVita_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PSVita_VertexData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PSVita_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PSVita_PixelData.bin")))
         {
             new_shader.Cg_PSVita_PixelData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.Cg_PSVita_PixelData.IsNull = false;
-            new_shader.Cg_PSVita_PixelData.Data = File.ReadAllBytes(localImportDir + "Cg_PSVita_PixelData.bin");
+            new_shader.Cg_PSVita_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PSVita_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PS3_VertexData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PS3_VertexData.bin")))
         {
             new_shader.Cg_PS3_VertexData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.Cg_PS3_VertexData.IsNull = false;
-            new_shader.Cg_PS3_VertexData.Data = File.ReadAllBytes(localImportDir + "Cg_PS3_VertexData.bin");
+            new_shader.Cg_PS3_VertexData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PS3_VertexData.bin"));
         }
-        if (File.Exists(localImportDir + "Cg_PS3_PixelData.bin"))
+        if (File.Exists(Path.Combine(localImportDir, "Cg_PS3_PixelData.bin")))
         {
             new_shader.Cg_PS3_PixelData = new UndertaleShader.UndertaleRawShaderData();
             new_shader.Cg_PS3_PixelData.IsNull = false;
-            new_shader.Cg_PS3_PixelData.Data = File.ReadAllBytes(localImportDir + "Cg_PS3_PixelData.bin");
+            new_shader.Cg_PS3_PixelData.Data = File.ReadAllBytes(Path.Combine(localImportDir, "Cg_PS3_PixelData.bin"));
         }
-        if (File.Exists(localImportDir + "VertexShaderAttributes.txt"))
+        if (File.Exists(Path.Combine(localImportDir, "VertexShaderAttributes.txt")))
         {
             string line;
             // Read the file and display it line by line.
-            StreamReader file = new StreamReader(localImportDir + "VertexShaderAttributes.txt");
+            StreamReader file = new StreamReader(Path.Combine(localImportDir, "VertexShaderAttributes.txt"));
             while ((line = file.ReadLine()) != null)
             {
                 line = line.Trim();

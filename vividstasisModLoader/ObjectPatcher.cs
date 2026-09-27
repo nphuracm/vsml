@@ -6,7 +6,7 @@ namespace vividstasisModLoader;
 
 public class ObjectPatcher(UndertaleData data, string modDir)
 {
-    private string _objectPath = $"{modDir}/objects/";
+    private string _objectPath = Path.Combine(modDir, "objects");
 
     public bool Exist()
     {
